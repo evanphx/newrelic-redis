@@ -30,7 +30,14 @@ NewRelic::Agent.logger.debug 'Installing Redis instrumentation'
       metrics = ["Database/Redis/#{method_name.to_s.upcase}", total_metric]
 
       self.class.trace_execution_scoped(metrics) do
-        call_without_newrelic_trace(*args)
+        start = Time.now
+
+        begin
+          call_without_newrelic_trace(*args)
+        ensure
+          s = NewRelic::Agent.instance.transaction_sampler
+          s.notice_nosql(args.inspect, (Time.now - start).to_f) rescue nil
+        end
       end
     end
 
@@ -52,7 +59,7 @@ NewRelic::Agent.logger.debug 'Installing Redis instrumentation'
       # can at least see what all the commands were. This prevents
       # metric namespace explosion.
 
-      metrics = [total_metric, "Database/Redis/Pipelined"]
+      metrics = ["Database/Redis/Pipelined", total_metric]
 
       commands.each do |c|
         name = c.kind_of?(Array) ? c[0] : c
@@ -60,7 +67,14 @@ NewRelic::Agent.logger.debug 'Installing Redis instrumentation'
       end
 
       self.class.trace_execution_scoped(metrics) do
-        call_pipelined_without_newrelic_trace commands, options
+        start = Time.now
+
+        begin
+          call_pipelined_without_newrelic_trace commands, options
+        ensure
+          s = NewRelic::Agent.instance.transaction_sampler
+          s.notice_nosql(commands.inspect, (Time.now - start).to_f) rescue nil
+        end
       end
     end
 

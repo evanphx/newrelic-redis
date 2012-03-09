@@ -26,11 +26,20 @@ class TestNewRelicRedis < Test::Unit::TestCase
     @engine = NewRelic::Agent.instance.stats_engine
     @engine.clear_stats
 
+    @sampler = NewRelic::Agent.instance.transaction_sampler
+    @sampler.enable
+    @sampler.reset!
+    @sampler.start_builder
+
     @redis = Redis.new :path => "/tmp/redis"
     @client = @redis.client
     class << @client
       include StubProcess
     end
+  end
+
+  def teardown
+    @sampler.clear_builder
   end
 
   def assert_metrics(*m)
@@ -41,6 +50,9 @@ class TestNewRelicRedis < Test::Unit::TestCase
     @redis.hgetall "foo"
     assert_equal [[[:hgetall, "foo"]]], @client.process_args
     assert_metrics "Database/Redis/HGETALL", "Database/Redis/allOther"
+
+    prm = @sampler.builder.current_segment.params
+    assert_equal "[[:hgetall, \"foo\"]]", prm[:key]
   end
 
   def test_call_pipelined
@@ -50,9 +62,12 @@ class TestNewRelicRedis < Test::Unit::TestCase
     end
 
     assert_equal [[[:hgetall, "foo"], [:inc, "bar"]]], @client.process_args
-    assert_metrics "Database/Redis/Pipelined/HGETALL",
+    assert_metrics "Database/Redis/Pipelined",
+                   "Database/Redis/Pipelined/HGETALL",
                    "Database/Redis/Pipelined/INC",
-                   "Database/Redis/Pipelined",
                    "Database/Redis/allOther"
+
+    prm = @sampler.builder.current_segment.params
+    assert_equal "[[:hgetall, \"foo\"], [:inc, \"bar\"]]", prm[:key]
   end
 end
