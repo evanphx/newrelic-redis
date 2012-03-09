@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name = "newrelic-redis"
-  s.version = "1.0.0"
+  s.version = "1.1.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Evan Phoenix"]
@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.description = "Redis instrumentation for Newrelic."
   s.email = ["evan@phx.io"]
   s.extra_rdoc_files = ["History.txt", "Manifest.txt", "README.txt"]
-  s.files = [".autotest", "History.txt", "Manifest.txt", "README.txt", "Rakefile", "lib/newrelic_redis.rb", "lib/newrelic_redis/instrumentation.rb", "lib/newrelic_redis/version.rb", "test/test_newrelic_redis.rb", ".gemtest"]
+  s.files = [".autotest", "History.txt", "Manifest.txt", "README.txt", "Rakefile", "lib/newrelic-redis.rb", "lib/newrelic_redis/instrumentation.rb", "lib/newrelic_redis/version.rb", "newrelic-redis.gemspec", "test/test_newrelic_redis.rb", ".gemtest"]
   s.homepage = "http://github.com/evanphx/newrelic-redis"
   s.rdoc_options = ["--main", "README.txt"]
   s.require_paths = ["lib"]
