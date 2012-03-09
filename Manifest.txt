@@ -1,0 +1,8 @@
+.autotest
+History.txt
+Manifest.txt
+README.txt
+Rakefile
+bin/newrelic-redis
+lib/newrelic-redis.rb
+test/test_newrelic-redis.rb
