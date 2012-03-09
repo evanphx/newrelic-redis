@@ -5,8 +5,6 @@ require 'redis'
 #  Originally contributed by Ashley Martens of ngmoco
 #  Rewritten, reorganized, and repackaged by Evan Phoenix
 
-# defined?(::Redis) && !NewRelic::Control.instance['disable_redis']
-
 NewRelic::Agent.logger.debug 'Installing Redis instrumentation'
 
 ::Redis::Client.class_eval do
@@ -19,27 +17,27 @@ NewRelic::Agent.logger.debug 'Installing Redis instrumentation'
   call_method = 
     ::Redis::Client.new.respond_to?(:call) ? :call : :raw_call_command
 
-    def call_with_newrelic_trace(*args)
-      if NewRelic::Agent::Instrumentation::MetricFrame.recording_web_transaction?
-        total_metric = 'Database/Redis/allWeb'
-      else
-        total_metric = 'Database/Redis/allOther'
-      end
+  def call_with_newrelic_trace(*args)
+    if NewRelic::Agent::Instrumentation::MetricFrame.recording_web_transaction?
+      total_metric = 'Database/Redis/allWeb'
+    else
+      total_metric = 'Database/Redis/allOther'
+    end
 
-      method_name = args[0].is_a?(Array) ? args[0][0] : args[0]
-      metrics = ["Database/Redis/#{method_name.to_s.upcase}", total_metric]
+    method_name = args[0].is_a?(Array) ? args[0][0] : args[0]
+    metrics = ["Database/Redis/#{method_name.to_s.upcase}", total_metric]
 
-      self.class.trace_execution_scoped(metrics) do
-        start = Time.now
+    self.class.trace_execution_scoped(metrics) do
+      start = Time.now
 
-        begin
-          call_without_newrelic_trace(*args)
-        ensure
-          s = NewRelic::Agent.instance.transaction_sampler
-          s.notice_nosql(args.inspect, (Time.now - start).to_f) rescue nil
-        end
+      begin
+        call_without_newrelic_trace(*args)
+      ensure
+        s = NewRelic::Agent.instance.transaction_sampler
+        s.notice_nosql(args.inspect, (Time.now - start).to_f) rescue nil
       end
     end
+  end
 
   alias_method :call_without_newrelic_trace, call_method
   alias_method call_method, :call_with_newrelic_trace
