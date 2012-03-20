@@ -5,8 +5,6 @@ require 'redis'
 #  Originally contributed by Ashley Martens of ngmoco
 #  Rewritten, reorganized, and repackaged by Evan Phoenix
 
-NewRelic::Agent.logger.debug 'Installing Redis instrumentation'
-
 ::Redis::Client.class_eval do
 
   include NewRelic::Agent::MethodTracer
