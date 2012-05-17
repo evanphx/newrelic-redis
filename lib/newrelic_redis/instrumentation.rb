@@ -5,6 +5,11 @@ require 'redis'
 #  Originally contributed by Ashley Martens of ngmoco
 #  Rewritten, reorganized, and repackaged by Evan Phoenix
 
+load_probes =
+  !NewRelic::Control.instance['disable_redis'] &&
+  ENV['NEWRELIC_ENABLE'].to_s !~ /false|off|no/i
+
+# load_probes checked as a post condition
 ::Redis::Client.class_eval do
 
   include NewRelic::Agent::MethodTracer
@@ -78,5 +83,5 @@ require 'redis'
     alias_method :call_pipelined_without_newrelic_trace, :call_pipelined
     alias_method :call_pipelined, :call_pipelined_with_newrelic_trace
   end
-end
+end if load_probes
 
