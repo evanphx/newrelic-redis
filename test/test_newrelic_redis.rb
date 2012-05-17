@@ -6,20 +6,8 @@ require 'newrelic_redis/instrumentation'
 class TestNewRelicRedis < Test::Unit::TestCase
   include NewRelic::Agent::Instrumentation::ControllerInstrumentation
 
-  module StubProcess
-    def establish_connection
-    end
-
-    def read(*args)
-    end
-
-    def process(*args)
-      @process_args = args
-    end
-
-    attr_reader :process_args
-
-  end
+  PORT = 6381
+  OPTIONS = {:port => PORT, :db => 15, :timeout => 0.1}
 
   def setup
     NewRelic::Agent.manual_start
@@ -31,11 +19,8 @@ class TestNewRelicRedis < Test::Unit::TestCase
     @sampler.reset!
     @sampler.start_builder
 
-    @redis = Redis.new :path => "/tmp/redis"
+    @redis = Redis.new OPTIONS
     @client = @redis.client
-    class << @client
-      include StubProcess
-    end
   end
 
   def teardown
@@ -43,31 +28,31 @@ class TestNewRelicRedis < Test::Unit::TestCase
   end
 
   def assert_metrics(*m)
-    assert_equal m.sort, @engine.metrics.sort
+    m.each do |x|
+      assert @engine.metrics.include?(x), "#{x} not in metrics"
+    end
   end
 
   def test_call
     @redis.hgetall "foo"
-    assert_equal [[[:hgetall, "foo"]]], @client.process_args
     assert_metrics "Database/Redis/HGETALL", "Database/Redis/allOther"
 
     prm = @sampler.builder.current_segment.params
-    assert_equal "[[:hgetall, \"foo\"]]", prm[:key]
+    assert_equal "[[:select, 15]];\n[[:hgetall, \"foo\"]]", prm[:key]
   end
 
   def test_call_pipelined
     @redis.pipelined do
       @redis.hgetall "foo"
-      @redis.inc "bar"
+      @redis.incr "bar"
     end
 
-    assert_equal [[[:hgetall, "foo"], [:inc, "bar"]]], @client.process_args
     assert_metrics "Database/Redis/Pipelined",
                    "Database/Redis/Pipelined/HGETALL",
-                   "Database/Redis/Pipelined/INC",
+                   "Database/Redis/Pipelined/INCR",
                    "Database/Redis/allOther"
 
     prm = @sampler.builder.current_segment.params
-    assert_equal "[[:hgetall, \"foo\"], [:inc, \"bar\"]]", prm[:key]
+    assert_equal "[[:select, 15]];\n[[:hgetall, \"foo\"], [:incr, \"bar\"]]", prm[:key]
   end
 end
