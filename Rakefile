@@ -50,7 +50,7 @@ Hoe.plugin :git
 HOE = Hoe.spec 'newrelic-redis' do
   developer 'Evan Phoenix', 'evan@phx.io'
 
-  dependency "redis", "< 3.0"
+  dependency "redis", "< 4.0"
   dependency "newrelic_rpm", "~> 3.0"
 end
 
