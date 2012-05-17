@@ -44,7 +44,7 @@ require 'redis'
   # Don't bother supporting them for now.
   #
   if public_method_defined? :call_pipelined
-    def call_pipelined_with_newrelic_trace(commands, options={})
+    def call_pipelined_with_newrelic_trace(commands, *rest)
       if NewRelic::Agent::Instrumentation::MetricFrame.recording_web_transaction?
         total_metric = 'Database/Redis/allWeb'
       else
@@ -66,7 +66,7 @@ require 'redis'
         start = Time.now
 
         begin
-          call_pipelined_without_newrelic_trace commands, options
+          call_pipelined_without_newrelic_trace commands, *rest
         ensure
           s = NewRelic::Agent.instance.transaction_sampler
           s.notice_nosql(commands.inspect, (Time.now - start).to_f) rescue nil
