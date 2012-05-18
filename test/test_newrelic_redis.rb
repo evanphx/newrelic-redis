@@ -55,4 +55,18 @@ class TestNewRelicRedis < Test::Unit::TestCase
     prm = @sampler.builder.current_segment.params
     assert_equal "[[:select, 15]];\n[[:hgetall, \"foo\"], [:incr, \"bar\"]]", prm[:key]
   end
+
+  def test_call_with_block
+    rep = nil
+
+    @redis.client.call [:info] do |reply|
+      rep = reply
+    end
+
+    if Redis::VERSION.split(".").first.to_i >= 3
+      assert_kind_of String, rep
+    else
+      assert_nil rep
+    end
+  end
 end

@@ -20,7 +20,7 @@ load_probes =
   call_method = 
     ::Redis::Client.new.respond_to?(:call) ? :call : :raw_call_command
 
-  def call_with_newrelic_trace(*args)
+  def call_with_newrelic_trace(*args, &blk)
     if NewRelic::Agent::Instrumentation::MetricFrame.recording_web_transaction?
       total_metric = 'Database/Redis/allWeb'
     else
@@ -34,7 +34,7 @@ load_probes =
       start = Time.now
 
       begin
-        call_without_newrelic_trace(*args)
+        call_without_newrelic_trace(*args, &blk)
       ensure
         s = NewRelic::Agent.instance.transaction_sampler
         s.notice_nosql(args.inspect, (Time.now - start).to_f) rescue nil
