@@ -1,5 +1,4 @@
 require 'new_relic/agent/method_tracer'
-require 'redis'
 
 # Redis instrumentation.
 #  Originally contributed by Ashley Martens of ngmoco
@@ -9,7 +8,9 @@ DependencyDetection.defer do
   @name = :redis
 
   depends_on do
-    defined?(::Redis) and not NewRelic::Control.instance['disable_redis']
+    defined?(::Redis) &&
+    !NewRelic::Control.instance['disable_redis'] &&
+    ENV['NEWRELIC_ENABLE'].to_s !~ /false|off|no/i
   end
 
   executes do
@@ -20,8 +21,8 @@ DependencyDetection.defer do
     ::Redis::Client.class_eval do
       # Support older versions of Redis::Client that used the method
       # +raw_call_command+.
-    
-      call_method = ::Redis::Client.new.respond_to?(:call) ? :call : :raw_call_command      
+
+      call_method = ::Redis::Client.new.respond_to?(:call) ? :call : :raw_call_command
 
       def call_with_newrelic_trace(*args, &blk)
         if NewRelic::Agent::Instrumentation::MetricFrame.recording_web_transaction?
@@ -35,7 +36,7 @@ DependencyDetection.defer do
 
         self.class.trace_execution_scoped(metrics) do
           start = Time.now
-    
+
           begin
             call_without_newrelic_trace(*args, &blk)
           ensure
@@ -47,7 +48,7 @@ DependencyDetection.defer do
 
       alias_method :call_without_newrelic_trace, call_method
       alias_method call_method, :call_with_newrelic_trace
-    
+
       # Older versions of Redis handle pipelining completely differently.
       # Don't bother supporting them for now.
       #
@@ -58,21 +59,21 @@ DependencyDetection.defer do
           else
             total_metric = 'Database/Redis/allOther'
           end
-    
+
           # Report each command as a metric under pipelined, so the user
           # can at least see what all the commands were. This prevents
           # metric namespace explosion.
-    
+
           metrics = ["Database/Redis/Pipelined", total_metric]
-    
+
           commands.each do |c|
             name = c.kind_of?(Array) ? c[0] : c
             metrics << "Database/Redis/Pipelined/#{name.to_s.upcase}"
           end
-    
+
           self.class.trace_execution_scoped(metrics) do
             start = Time.now
-    
+
             begin
               call_pipelined_without_newrelic_trace commands, *rest
             ensure
@@ -81,8 +82,7 @@ DependencyDetection.defer do
             end
           end
         end
-    
-    
+
         alias_method :call_pipelined_without_newrelic_trace, :call_pipelined
         alias_method :call_pipelined, :call_pipelined_with_newrelic_trace
       end
