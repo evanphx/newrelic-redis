@@ -9,8 +9,8 @@ DependencyDetection.defer do
 
   depends_on do
     defined?(::Redis) &&
-    !NewRelic::Control.instance['disable_redis'] &&
-    ENV['NEWRELIC_ENABLE'].to_s !~ /false|off|no/i
+      !NewRelic::Control.instance['disable_redis'] &&
+      ENV['NEWRELIC_ENABLE'].to_s !~ /false|off|no/i
   end
 
   executes do
