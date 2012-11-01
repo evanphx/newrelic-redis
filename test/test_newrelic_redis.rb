@@ -21,6 +21,8 @@ class TestNewRelicRedis < Test::Unit::TestCase
 
     @redis = Redis.new OPTIONS
     @client = @redis.client
+
+    DependencyDetection.detect!
   end
 
   def teardown
