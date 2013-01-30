@@ -1,38 +1,38 @@
-= newrelic-redis
+# newrelic-redis
 
 * http://github.com/evanphx/newrelic-redis
 
-== DESCRIPTION:
+## DESCRIPTION:
 
 Redis instrumentation for Newrelic.
 
-== FEATURES/PROBLEMS:
+## FEATURES/PROBLEMS:
 
 * Allows transactions to show time spent inside redis requests
 * Supports normal and pipelined commands
 
-== SYNOPSIS:
+## SYNOPSIS:
 
   Just add the gem to your project!
 
-== REQUIREMENTS:
+## REQUIREMENTS:
 
 * redis-rb
 
-== INSTALL:
+## INSTALL:
 
 * gem install newrelic-redis
 
-== DEVELOPERS:
+## DEVELOPERS:
 
 After checking out the source, run:
 
-  $ rake newb
+    $ rake newb
 
 This task will install any missing dependencies, run the tests/specs,
 and generate the RDoc.
 
-== LICENSE:
+## LICENSE:
 
 (The MIT License)
 
