@@ -21,7 +21,7 @@ Redis instrumentation for Newrelic.
 
 ## INSTALL:
 
-* gem install newrelic-redis
+    $ gem install newrelic-redis
 
 ## DEVELOPERS:
 
