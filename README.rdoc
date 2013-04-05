@@ -13,7 +13,7 @@ Redis instrumentation for Newrelic.
 
 == SYNOPSIS:
 
-  Just add the gem to your project!
+Just add the gem to your project!
 
 == REQUIREMENTS:
 
