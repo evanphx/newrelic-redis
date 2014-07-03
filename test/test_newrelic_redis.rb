@@ -71,4 +71,20 @@ class TestNewRelicRedis < Test::Unit::TestCase
       assert_nil rep
     end
   end
+
+  def test_obfuscated
+    NewRelic::Control.instance["transaction_tracer.record_sql"] = "obfuscated"
+    @redis.pipelined do
+      @redis.hgetall "foo"
+      @redis.incr "bar"
+    end
+
+    assert_metrics "Database/Redis/Pipelined",
+                   "Database/Redis/Pipelined/HGETALL",
+                   "Database/Redis/Pipelined/INCR",
+                   "Database/Redis/allOther"
+
+    prm = @sampler.builder.current_segment.params
+    assert_equal "[[:select, \"?\"]];\n[[:hgetall, \"?\"], [:incr, \"?\"]]", prm[:key]
+  end
 end
