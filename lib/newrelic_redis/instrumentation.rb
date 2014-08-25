@@ -40,8 +40,7 @@ DependencyDetection.defer do
           begin
             call_without_newrelic_trace(*args, &blk)
           ensure
-            s = NewRelic::Agent.instance.transaction_sampler
-            s.notice_nosql(args.inspect, (Time.now - start).to_f) rescue nil
+            _send_to_new_relic(args, start)
           end
         end
       end
@@ -77,8 +76,7 @@ DependencyDetection.defer do
             begin
               call_pipelined_without_newrelic_trace commands, *rest
             ensure
-              s = NewRelic::Agent.instance.transaction_sampler
-              s.notice_nosql(commands.inspect, (Time.now - start).to_f) rescue nil
+              _send_to_new_relic(commands, start)
             end
           end
         end
@@ -86,9 +84,16 @@ DependencyDetection.defer do
         alias_method :call_pipelined_without_newrelic_trace, :call_pipelined
         alias_method :call_pipelined, :call_pipelined_with_newrelic_trace
       end
+
+      def _send_to_new_relic(args, start)
+        if NewRelic::Control.instance["transaction_tracer.record_sql"] == "obfuscated"
+          args.map! { |arg| [arg.first] + ["?"] * (arg.count - 1) }
+        end
+        s = NewRelic::Agent.instance.transaction_sampler
+        s.notice_nosql(args.inspect, (Time.now - start).to_f) rescue nil
+      end
     end
   end
-
 end
 
 
