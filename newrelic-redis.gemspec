@@ -9,10 +9,10 @@ Gem::Specification.new do |s|
   s.date = "2012-05-18"
   s.description = "Redis instrumentation for Newrelic."
   s.email = ["evan@phx.io"]
-  s.extra_rdoc_files = ["History.txt", "Manifest.txt", "README.txt"]
-  s.files = [".autotest", "History.txt", "Manifest.txt", "README.txt", "Rakefile", "lib/newrelic-redis.rb", "lib/newrelic_redis/instrumentation.rb", "lib/newrelic_redis/version.rb", "newrelic-redis.gemspec", "test/test.conf", "test/test_newrelic_redis.rb", ".gemtest"]
+  s.extra_rdoc_files = ["History.txt", "Manifest.txt", "README.rdoc"]
+  s.files = [".autotest", "History.txt", "Manifest.txt", "README.rdoc", "Rakefile", "lib/newrelic-redis.rb", "lib/newrelic_redis/instrumentation.rb", "lib/newrelic_redis/version.rb", "newrelic-redis.gemspec", "test/test.conf", "test/test_newrelic_redis.rb", ".gemtest"]
   s.homepage = "http://github.com/evanphx/newrelic-redis"
-  s.rdoc_options = ["--main", "README.txt"]
+  s.rdoc_options = ["--main", "README.rdoc"]
   s.require_paths = ["lib"]
   s.rubyforge_project = "newrelic-redis"
   s.rubygems_version = "1.8.22"

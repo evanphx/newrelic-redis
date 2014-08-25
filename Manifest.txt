@@ -1,7 +1,7 @@
 .autotest
 History.txt
 Manifest.txt
-README.txt
+README.rdoc
 Rakefile
 lib/newrelic-redis.rb
 lib/newrelic_redis/instrumentation.rb
