@@ -14,7 +14,7 @@ DependencyDetection.defer do
   end
 
   executes do
-    NewRelic::Agent.logger.debug 'Installing Redis Instrumentation'
+    NewRelic::Agent.logger.info 'Installing Redis Instrumentation'
   end
 
   executes do
