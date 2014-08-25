@@ -1,3 +1,8 @@
+=== 1.5.0 / 2014-08-25
+
+* 1 feature:
+   * Respect the obfuscated configuration parameter for in redis
+
 === 1.4.0 / 2012-10-31
 
 HAPPY HALLOWEEN!
