@@ -37,7 +37,7 @@ class TestNewRelicRedis < Test::Unit::TestCase
 
   def test_call
     @redis.hgetall "foo"
-    assert_metrics "Database/Redis/HGETALL", "Database/Redis/allOther"
+    assert_metrics "Datastore/Redis/HGETALL", "Datastore/Redis/allOther"
 
     prm = @sampler.builder.current_segment.params
     assert_equal "[[:select, 15]];\n[[:hgetall, \"foo\"]]", prm[:key]
@@ -49,10 +49,10 @@ class TestNewRelicRedis < Test::Unit::TestCase
       @redis.incr "bar"
     end
 
-    assert_metrics "Database/Redis/Pipelined",
-                   "Database/Redis/Pipelined/HGETALL",
-                   "Database/Redis/Pipelined/INCR",
-                   "Database/Redis/allOther"
+    assert_metrics "Datastore/Redis/Pipelined",
+                   "Datastore/Redis/Pipelined/HGETALL",
+                   "Datastore/Redis/Pipelined/INCR",
+                   "Datastore/Redis/allOther"
 
     prm = @sampler.builder.current_segment.params
     assert_equal "[[:select, 15]];\n[[:hgetall, \"foo\"], [:incr, \"bar\"]]", prm[:key]
@@ -79,10 +79,10 @@ class TestNewRelicRedis < Test::Unit::TestCase
       @redis.incr "bar"
     end
 
-    assert_metrics "Database/Redis/Pipelined",
-                   "Database/Redis/Pipelined/HGETALL",
-                   "Database/Redis/Pipelined/INCR",
-                   "Database/Redis/allOther"
+    assert_metrics "Datastore/Redis/Pipelined",
+                   "Datastore/Redis/Pipelined/HGETALL",
+                   "Datastore/Redis/Pipelined/INCR",
+                   "Datastore/Redis/allOther"
 
     prm = @sampler.builder.current_segment.params
     assert_equal "[[:select, \"?\"]];\n[[:hgetall, \"?\"], [:incr, \"?\"]]", prm[:key]
