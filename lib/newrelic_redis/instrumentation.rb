@@ -18,6 +18,8 @@ DependencyDetection.defer do
   end
 
   executes do
+    require 'new_relic/agent/datastores'
+
     ::Redis::Client.class_eval do
       # Support older versions of Redis::Client that used the method
       # +raw_call_command+.
@@ -25,23 +27,13 @@ DependencyDetection.defer do
       call_method = ::Redis::Client.new.respond_to?(:call) ? :call : :raw_call_command
 
       def call_with_newrelic_trace(*args, &blk)
-        if NewRelic::Agent::Instrumentation::MetricFrame.recording_web_transaction?
-          total_metric = 'Datastore/Redis/allWeb'
-        else
-          total_metric = 'Datastore/Redis/allOther'
+        method_name = args[0].is_a?(Array) ? args[0][0] : args[0]
+        callback = proc do |result, metric, elapsed|
+          _send_to_new_relic(args, elapsed)
         end
 
-        method_name = args[0].is_a?(Array) ? args[0][0] : args[0]
-        metrics = ["Datastore/Redis/#{method_name.to_s.upcase}", total_metric]
-
-        self.class.trace_execution_scoped(metrics) do
-          start = Time.now
-
-          begin
-            call_without_newrelic_trace(*args, &blk)
-          ensure
-            _send_to_new_relic(args, start)
-          end
+        NewRelic::Agent::Datastores.wrap("Redis", method_name, nil, callback) do
+          call_without_newrelic_trace(*args, &blk)
         end
       end
 
@@ -53,31 +45,24 @@ DependencyDetection.defer do
       #
       if public_method_defined? :call_pipelined
         def call_pipelined_with_newrelic_trace(commands, *rest)
-          if NewRelic::Agent::Instrumentation::MetricFrame.recording_web_transaction?
-            total_metric = 'Datastore/Redis/allWeb'
-          else
-            total_metric = 'Datastore/Redis/allOther'
-          end
-
-          # Report each command as a metric under pipelined, so the user
-          # can at least see what all the commands were. This prevents
-          # metric namespace explosion.
-
-          metrics = ["Datastore/Redis/Pipelined", total_metric]
-
-          commands.each do |c|
+          # Report each command as a metric suffixed with _pipelined, so the
+          # user can at least see what all the commands were.
+          additional = commands.map do |c|
             name = c.kind_of?(Array) ? c[0] : c
-            metrics << "Datastore/Redis/Pipelined/#{name.to_s.upcase}"
+            "Datastore/operation/Redis/#{name.to_s.downcase}_pipelined"
           end
 
-          self.class.trace_execution_scoped(metrics) do
-            start = Time.now
-
-            begin
-              call_pipelined_without_newrelic_trace commands, *rest
-            ensure
-              _send_to_new_relic(commands, start)
+          callback = proc do |result, metric, elapsed|
+            _send_to_new_relic(commands, elapsed)
+            additional.each do |additional_metric|
+              NewRelic::Agent::MethodTracer.trace_execution_scoped(additional_metric) do
+                # No-op, just getting them as placeholders in the trace tree
+              end
             end
+          end
+
+          NewRelic::Agent::Datastores.wrap("Redis", "pipelined", nil, callback) do
+            call_pipelined_without_newrelic_trace commands, *rest
           end
         end
 
@@ -85,12 +70,11 @@ DependencyDetection.defer do
         alias_method :call_pipelined, :call_pipelined_with_newrelic_trace
       end
 
-      def _send_to_new_relic(args, start)
+      def _send_to_new_relic(args, elapsed)
         if NewRelic::Control.instance["transaction_tracer.record_sql"] == "obfuscated"
           args.map! { |arg| [arg.first] + ["?"] * (arg.count - 1) }
         end
-        s = NewRelic::Agent.instance.transaction_sampler
-        s.notice_nosql(args.inspect, (Time.now - start).to_f) rescue nil
+        NewRelic::Agent::Datastores.notice_statement(args.inspect, elapsed)
       end
     end
   end

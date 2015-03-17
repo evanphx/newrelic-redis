@@ -26,19 +26,24 @@ class TestNewRelicRedis < Test::Unit::TestCase
   def assert_segment_has_key(segment_name, expected)
     sample = NewRelic::Agent.agent.transaction_sampler.tl_builder.sample
     segment = find_segment_with_name(sample, segment_name)
-    assert_equal expected, segment.params[:key]
+    assert_equal expected, segment.params[:statement]
   end
 
   def test_call
     with_config(:'transaction_tracer.record_sql' => 'raw') do
       in_transaction do
         @redis.hgetall "foo"
-        assert_segment_has_key "Datastore/Redis/SELECT", "[[:select, 15]]"
-        assert_segment_has_key "Datastore/Redis/HGETALL", "[[:hgetall, \"foo\"]]"
+        assert_segment_has_key "Datastore/operation/Redis/select", "[[:select, 15]]"
+        assert_segment_has_key "Datastore/operation/Redis/hgetall", "[[:hgetall, \"foo\"]]"
       end
     end
 
-    assert_metrics "Datastore/Redis/HGETALL", "Datastore/Redis/allOther"
+    assert_metrics "Datastore/all",
+                   "Datastore/allOther",
+                   "Datastore/Redis/all",
+                   "Datastore/Redis/allOther",
+                   "Datastore/operation/Redis/select",
+                   "Datastore/operation/Redis/hgetall"
   end
 
   def test_call_pipelined
@@ -49,15 +54,19 @@ class TestNewRelicRedis < Test::Unit::TestCase
           @redis.incr "bar"
         end
 
-        assert_segment_has_key "Datastore/Redis/SELECT", "[[:select, 15]]"
-        assert_segment_has_key "Datastore/Redis/Pipelined", "[[:hgetall, \"foo\"], [:incr, \"bar\"]]"
+        assert_segment_has_key "Datastore/operation/Redis/select", "[[:select, 15]]"
+        assert_segment_has_key "Datastore/operation/Redis/pipelined", "[[:hgetall, \"foo\"], [:incr, \"bar\"]]"
       end
     end
 
-    assert_metrics "Datastore/Redis/Pipelined",
-                   "Datastore/Redis/Pipelined/HGETALL",
-                   "Datastore/Redis/Pipelined/INCR",
-                   "Datastore/Redis/allOther"
+    assert_metrics "Datastore/all",
+                   "Datastore/allOther",
+                   "Datastore/Redis/all",
+                   "Datastore/Redis/allOther",
+                   "Datastore/operation/Redis/select",
+                   "Datastore/operation/Redis/pipelined",
+                   "Datastore/operation/Redis/hgetall_pipelined",
+                   "Datastore/operation/Redis/incr_pipelined"
   end
 
   def test_call_with_block
@@ -82,14 +91,18 @@ class TestNewRelicRedis < Test::Unit::TestCase
           @redis.incr "bar"
         end
 
-        assert_segment_has_key "Datastore/Redis/SELECT", "[[:select, \"?\"]]"
-        assert_segment_has_key "Datastore/Redis/Pipelined", "[[:hgetall, \"?\"], [:incr, \"?\"]]"
+        assert_segment_has_key "Datastore/operation/Redis/select", "[[:select, \"?\"]]"
+        assert_segment_has_key "Datastore/operation/Redis/pipelined", "[[:hgetall, \"?\"], [:incr, \"?\"]]"
       end
     end
 
-    assert_metrics "Datastore/Redis/Pipelined",
-                   "Datastore/Redis/Pipelined/HGETALL",
-                   "Datastore/Redis/Pipelined/INCR",
-                   "Datastore/Redis/allOther"
+    assert_metrics "Datastore/all",
+                   "Datastore/allOther",
+                   "Datastore/Redis/all",
+                   "Datastore/Redis/allOther",
+                   "Datastore/operation/Redis/select",
+                   "Datastore/operation/Redis/pipelined",
+                   "Datastore/operation/Redis/hgetall_pipelined",
+                   "Datastore/operation/Redis/incr_pipelined"
   end
 end
