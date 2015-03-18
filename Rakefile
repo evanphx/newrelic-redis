@@ -52,6 +52,8 @@ HOE = Hoe.spec 'newrelic-redis' do
 
   dependency "redis", "< 4.0"
   dependency "newrelic_rpm", "~> 3.11"
+
+  self.readme_file = "README.md"
 end
 
 file "#{HOE.spec.name}.gemspec" => ['Rakefile'] do |t|
