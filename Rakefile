@@ -51,7 +51,7 @@ HOE = Hoe.spec 'newrelic-redis' do
   developer 'Evan Phoenix', 'evan@phx.io'
 
   dependency "redis", "< 4.0"
-  dependency "newrelic_rpm", "~> 3.0"
+  dependency "newrelic_rpm", "~> 3.11"
 end
 
 file "#{HOE.spec.name}.gemspec" => ['Rakefile'] do |t|
