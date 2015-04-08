@@ -72,7 +72,9 @@ DependencyDetection.defer do
 
       def _send_to_new_relic(args, elapsed)
         if NewRelic::Control.instance["transaction_tracer.record_sql"] == "obfuscated"
-          args.map! { |arg| [arg.first] + ["?"] * (arg.count - 1) }
+          unless args.empty?
+            args.map! { |arg| [arg.first] + ["?"] * (arg.count - 1) }
+          end
         end
         NewRelic::Agent::Datastores.notice_statement(args.inspect, elapsed)
       end
