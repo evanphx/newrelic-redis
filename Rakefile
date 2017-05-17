@@ -52,7 +52,8 @@ HOE = Hoe.spec 'newrelic-redis' do
   license "BSD"
 
   dependency "redis", "< 4.0"
-  dependency "newrelic_rpm", "~> 3.11"
+  dependency "newrelic_rpm", "~> 4.0"
+  dependency "minitest", ">= 5", :dev
 
   self.readme_file = "README.md"
 end
