@@ -1,4 +1,4 @@
-require 'test/unit'
+require 'minitest/autorun'
 require 'redis'
 
 require 'newrelic_rpm'
@@ -8,7 +8,7 @@ DependencyDetection.detect!
 
 NewRelic::Agent.require_test_helper
 
-class TestNewRelicRedis < Test::Unit::TestCase
+class TestNewRelicRedis < Minitest::Test
   PORT = 6381
   OPTIONS = {:port => PORT, :db => 15, :timeout => 0.1}
 
@@ -25,7 +25,7 @@ class TestNewRelicRedis < Test::Unit::TestCase
 
   def assert_segment_has_key(segment_name, expected)
     sample = NewRelic::Agent.agent.transaction_sampler.tl_builder.sample
-    segment = find_segment_with_name(sample, segment_name)
+    segment = find_node_with_name(sample, segment_name)
     assert_equal expected, segment.params[:statement]
   end
 
