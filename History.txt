@@ -1,3 +1,8 @@
+=== 2.1.0 / 2017-07-25
+
+* 1 feature
+  * Officially support new relic ruby agent 4.x
+
 === 2.0.2 / 2015-05-07
 
 * 1 minor bugfix:
