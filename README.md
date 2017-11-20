@@ -1,36 +1,9 @@
 # newrelic-redis
 
-* http://github.com/evanphx/newrelic-redis
+## This gem is deprecated in favor of newrelic_rpm's built-in instrumentation
 
-## DESCRIPTION:
-
-Redis instrumentation for Newrelic.
-
-## FEATURES/PROBLEMS:
-
-* Allows transactions to show time spent inside redis requests
-* Supports normal and pipelined commands
-
-## SYNOPSIS:
-
-  Just add the gem to your project!
-
-## REQUIREMENTS:
-
-* redis-rb
-
-## INSTALL:
-
-    $ gem install newrelic-redis
-
-## DEVELOPERS:
-
-After checking out the source, run:
-
-    $ rake newb
-
-This task will install any missing dependencies, run the tests/specs,
-and generate the RDoc.
+If you're using `newrelic-redis`, we recommend removing it and updating your
+`newrelic_rpm` to any version `>= 3.18.1`
 
 ## LICENSE:
 
